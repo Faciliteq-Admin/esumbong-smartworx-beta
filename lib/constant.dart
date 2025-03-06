@@ -18,6 +18,7 @@ String strCity = '';
 String strBarangay = '';
 
 bool isObscureText = true;
+bool isObscureTextOTP = true;
 
 toast(
   BuildContext context,

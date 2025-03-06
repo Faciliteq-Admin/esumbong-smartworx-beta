@@ -9,6 +9,7 @@ import 'package:smartworx/api.dart';
 import 'package:smartworx/colors.dart';
 import 'package:smartworx/constant.dart';
 import 'package:smartworx/screens/home_screen.dart';
+import 'package:smartworx/screens/otp_screen.dart';
 import 'package:toastification/toastification.dart';
 
 class SignInScreen extends StatefulWidget {
@@ -117,15 +118,41 @@ class _SignInScreenState extends State<SignInScreen> {
                               );
                               context.loaderOverlay.hide();
                               if (res.success) {
-                                appBox.put(LOGGED_USER, res.data['user']);
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => const LoaderOverlay(
-                                      child: HomeScreen(),
+                                if (res.data['user']['tempPassword'] != null) {
+                                  context.loaderOverlay.show();
+                                  var res1 = await sendOTP(
+                                    context,
+                                    res.data['user']['mobile'],
+                                    res.data['user']['email'],
+                                  );
+                                  if (res1.success) {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => LoaderOverlay(
+                                          child: OtpScreen(
+                                              userData: res.data['user']),
+                                        ),
+                                      ),
+                                    );
+                                  } else {
+                                    toast(
+                                      context,
+                                      ToastificationType.error,
+                                      res.message.toString(),
+                                    );
+                                  }
+                                } else {
+                                  appBox.put(LOGGED_USER, res.data['user']);
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => const LoaderOverlay(
+                                        child: HomeScreen(),
+                                      ),
                                     ),
-                                  ),
-                                );
+                                  );
+                                }
                               } else {
                                 toast(
                                   context,

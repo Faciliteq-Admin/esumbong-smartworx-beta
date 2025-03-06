@@ -95,6 +95,80 @@ Future<ApiResponse> userLogin(
   }
 }
 
+Future<ApiResponse> sendOTP(
+  BuildContext context,
+  String mobile,
+  String email,
+) async {
+  try {
+    var path = "/v1/auth/otp/request";
+    Map<String, dynamic> payload = {
+      'type': 'Contractor',
+      'mobile': mobile,
+      'email': email,
+    };
+    Response response = await dio.post(
+      path,
+      data: payload,
+    );
+    if (response.data != null) {
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return ApiResponse(success: true, data: response.data);
+      }
+      return ApiResponse(success: false, message: response.data["message"]);
+    } else {
+      return const ApiResponse(success: false);
+    }
+  } on DioException catch (e) {
+    toast(
+      context,
+      ToastificationType.warning,
+      'You are offline',
+    );
+    return ApiResponse(success: false, message: e.message);
+  } catch (e) {
+    return ApiResponse(success: false, message: '$e');
+  }
+}
+
+Future<ApiResponse> setPassword(
+  BuildContext context,
+  String password,
+  String email,
+  String otp,
+) async {
+  try {
+    var path = "/v1/auth/password/set";
+    Map<String, dynamic> payload = {
+      'type': 'Contractor',
+      'password': password,
+      'email': email,
+      'otp': otp,
+    };
+    Response response = await dio.post(
+      path,
+      data: payload,
+    );
+    if (response.data != null) {
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return ApiResponse(success: true, data: response.data);
+      }
+      return ApiResponse(success: false, message: response.data["message"]);
+    } else {
+      return const ApiResponse(success: false);
+    }
+  } on DioException catch (e) {
+    toast(
+      context,
+      ToastificationType.warning,
+      'You are offline',
+    );
+    return ApiResponse(success: false, message: e.message);
+  } catch (e) {
+    return ApiResponse(success: false, message: '$e');
+  }
+}
+
 Future<ApiResponse> getReports(
   BuildContext context,
 ) async {
