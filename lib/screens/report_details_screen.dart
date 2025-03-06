@@ -1,5 +1,6 @@
 // ignore_for_file: must_be_immutable, use_build_context_synchronously
 
+import 'package:easy_image_viewer/easy_image_viewer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/svg.dart';
@@ -12,13 +13,11 @@ import 'package:smartworx/screens/progress_screen.dart';
 import 'package:toastification/toastification.dart';
 
 class ReportDetailsScreen extends StatefulWidget {
-  String reporterName;
-  String reporterAddress;
-  String reporterEmail;
-  String reporterPhone;
-  double reporterLat;
-  double reporterLong;
+  double lat;
+  double long;
   String id;
+  String reporterId;
+  String contractorId;
   String category;
   String subcategory;
   String status;
@@ -28,13 +27,11 @@ class ReportDetailsScreen extends StatefulWidget {
   List attach;
 
   ReportDetailsScreen({
-    required this.reporterName,
-    required this.reporterAddress,
-    required this.reporterEmail,
-    required this.reporterPhone,
-    required this.reporterLat,
-    required this.reporterLong,
+    required this.lat,
+    required this.long,
     required this.id,
+    required this.reporterId,
+    required this.contractorId,
     required this.category,
     required this.subcategory,
     required this.status,
@@ -50,6 +47,34 @@ class ReportDetailsScreen extends StatefulWidget {
 }
 
 class _ReportDetailsScreenState extends State<ReportDetailsScreen> {
+  Map citizen = {};
+
+  getAssignCitizen() async {
+    var res = await getCitizen(
+      context,
+      widget.reporterId,
+    );
+    if (res.success) {
+      if (mounted) {
+        setState(() {
+          citizen = res.data['data']['items'][0];
+        });
+      }
+    } else {
+      toast(
+        context,
+        ToastificationType.error,
+        res.message.toString(),
+      );
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    getAssignCitizen();
+  }
+
   @override
   Widget build(BuildContext context) {
     return AnnotatedRegion<SystemUiOverlayStyle>(
@@ -94,134 +119,82 @@ class _ReportDetailsScreenState extends State<ReportDetailsScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const SizedBox(height: 20),
-                Container(
-                  width: MediaQuery.of(context).size.width,
-                  decoration: BoxDecoration(
-                    color: blackColor.withValues(alpha: 0.8),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.only(
-                      left: 15,
-                      right: 15,
+                if (citizen['firstName'] != null) const SizedBox(height: 20),
+                if (citizen['firstName'] != null)
+                  Container(
+                    width: MediaQuery.of(context).size.width,
+                    decoration: BoxDecoration(
+                      color: blackColor.withValues(alpha: 0.8),
+                      borderRadius: BorderRadius.circular(10),
                     ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const SizedBox(height: 10),
-                        Row(
-                          children: [
-                            SvgPicture.asset(
-                              'assets/icons/ic_user.svg',
-                              height: 14,
-                              width: 14,
-                              fit: BoxFit.scaleDown,
-                              colorFilter: const ColorFilter.mode(
-                                whiteColor,
-                                BlendMode.srcIn,
+                    child: Padding(
+                      padding: const EdgeInsets.only(
+                        left: 15,
+                        right: 15,
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const SizedBox(height: 10),
+                          Row(
+                            children: [
+                              SvgPicture.asset(
+                                'assets/icons/ic_user.svg',
+                                height: 14,
+                                width: 14,
+                                fit: BoxFit.scaleDown,
+                                colorFilter: const ColorFilter.mode(
+                                  whiteColor,
+                                  BlendMode.srcIn,
+                                ),
                               ),
-                            ),
-                            const SizedBox(width: 5),
-                            textLabel(
-                              text: 'Reported By',
-                              color: whiteColor,
-                              weight: FontWeight.bold,
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 5),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            // ClipRRect(
-                            //   borderRadius: BorderRadius.circular(25),
-                            //   child: Image.asset(
-                            //     widget.reportArray['image'].toString(),
-                            //     height: 50,
-                            //     width: 50,
-                            //     fit: BoxFit.cover,
-                            //   ),
-                            // ),
-                            const SizedBox(height: 5),
-                            textLabel(
-                              text: widget.reporterName.toString(),
-                              color: whiteColor,
-                              size: 16,
-                              weight: FontWeight.bold,
-                            ),
-                            const SizedBox(height: 5),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                SvgPicture.asset(
-                                  'assets/icons/ic_address.svg',
-                                  height: 12,
-                                  width: 12,
-                                  fit: BoxFit.scaleDown,
-                                  colorFilter: const ColorFilter.mode(
-                                    whiteColor,
-                                    BlendMode.srcIn,
+                              const SizedBox(width: 5),
+                              textLabel(
+                                text: 'Reported By',
+                                color: whiteColor,
+                                weight: FontWeight.bold,
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 5),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Container(
+                                height: 50,
+                                width: 50,
+                                decoration: BoxDecoration(
+                                  color: darkRedColor,
+                                  borderRadius: BorderRadius.circular(25),
+                                ),
+                                child: Center(
+                                  child: textLabel(
+                                    text:
+                                        '${citizen['firstName'].toString()[0]}${citizen['lastName'].toString()[0]}',
+                                    color: whiteColor,
+                                    size: 18,
+                                    weight: FontWeight.bold,
                                   ),
                                 ),
-                                const SizedBox(width: 5),
-                                textLabel(
-                                  text: widget.reporterAddress.toString(),
-                                  color: whiteColor,
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 5),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                SvgPicture.asset(
-                                  'assets/icons/ic_email.svg',
-                                  height: 12,
-                                  width: 12,
-                                  fit: BoxFit.scaleDown,
-                                  colorFilter: const ColorFilter.mode(
-                                    whiteColor,
-                                    BlendMode.srcIn,
-                                  ),
-                                ),
-                                const SizedBox(width: 5),
-                                textLabel(
-                                  text: widget.reporterEmail,
-                                  color: whiteColor,
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 5),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                SvgPicture.asset(
-                                  'assets/icons/ic_mobile.svg',
-                                  height: 12,
-                                  width: 12,
-                                  fit: BoxFit.scaleDown,
-                                  colorFilter: const ColorFilter.mode(
-                                    whiteColor,
-                                    BlendMode.srcIn,
-                                  ),
-                                ),
-                                const SizedBox(width: 5),
-                                textLabel(
-                                  text: widget.reporterPhone,
-                                  color: whiteColor,
-                                ),
-                              ],
-                            ),
-                            if (widget.status == 'Rejected')
-                              const SizedBox(height: 20),
-                            if (widget.status == 'Rejected')
+                              ),
+                              const SizedBox(height: 5),
+                              textLabel(
+                                text: citizen['middleName'] == null ||
+                                        citizen['middleName'].toString().isEmpty
+                                    ? '${citizen['firstName']} ${citizen['lastName']}'
+                                    : '${citizen['firstName']} ${citizen['middleName']} ${citizen['lastName']}',
+                                color: whiteColor,
+                                size: 16,
+                                weight: FontWeight.bold,
+                              ),
+                              const SizedBox(height: 5),
                               Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
                                   SvgPicture.asset(
-                                    'assets/icons/ic_time.svg',
-                                    height: 10,
-                                    width: 10,
+                                    'assets/icons/ic_email.svg',
+                                    height: 12,
+                                    width: 12,
                                     fit: BoxFit.scaleDown,
                                     colorFilter: const ColorFilter.mode(
                                       whiteColor,
@@ -230,34 +203,19 @@ class _ReportDetailsScreenState extends State<ReportDetailsScreen> {
                                   ),
                                   const SizedBox(width: 5),
                                   textLabel(
-                                    text: 'Time Rejected',
+                                    text: citizen['email'].toString(),
                                     color: whiteColor,
-                                    weight: FontWeight.bold,
                                   ),
                                 ],
                               ),
-                            if (widget.status == 'Rejected')
                               const SizedBox(height: 5),
-                            if (widget.status == 'Rejected')
-                              Align(
-                                alignment: Alignment.bottomLeft,
-                                child: textLabel(
-                                  text: '',
-                                  color: whiteColor,
-                                  size: 14,
-                                ),
-                              ),
-                            if (widget.status == 'Ongoing' ||
-                                widget.status == 'Resolved')
-                              const SizedBox(height: 20),
-                            if (widget.status == 'Ongoing' ||
-                                widget.status == 'Resolved')
                               Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
                                   SvgPicture.asset(
-                                    'assets/icons/ic_time.svg',
-                                    height: 10,
-                                    width: 10,
+                                    'assets/icons/ic_mobile.svg',
+                                    height: 12,
+                                    width: 12,
                                     fit: BoxFit.scaleDown,
                                     colorFilter: const ColorFilter.mode(
                                       whiteColor,
@@ -266,66 +224,125 @@ class _ReportDetailsScreenState extends State<ReportDetailsScreen> {
                                   ),
                                   const SizedBox(width: 5),
                                   textLabel(
-                                    text: 'Time Responded',
+                                    text:
+                                        '+63${citizen['mobile'].toString().substring(1)}',
                                     color: whiteColor,
-                                    weight: FontWeight.bold,
                                   ),
                                 ],
                               ),
-                            if (widget.status == 'Ongoing' ||
-                                widget.status == 'Resolved')
-                              const SizedBox(height: 5),
-                            if (widget.status == 'Ongoing' ||
-                                widget.status == 'Resolved')
-                              Align(
-                                alignment: Alignment.bottomLeft,
-                                child: textLabel(
-                                  text: '',
-                                  color: whiteColor,
-                                  size: 14,
+                              if (widget.status == 'Rejected')
+                                const SizedBox(height: 20),
+                              if (widget.status == 'Rejected')
+                                Row(
+                                  children: [
+                                    SvgPicture.asset(
+                                      'assets/icons/ic_time.svg',
+                                      height: 10,
+                                      width: 10,
+                                      fit: BoxFit.scaleDown,
+                                      colorFilter: const ColorFilter.mode(
+                                        whiteColor,
+                                        BlendMode.srcIn,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 5),
+                                    textLabel(
+                                      text: 'Time Rejected',
+                                      color: whiteColor,
+                                      weight: FontWeight.bold,
+                                    ),
+                                  ],
                                 ),
-                              ),
-                            if (widget.status == 'Resolved')
+                              if (widget.status == 'Rejected')
+                                const SizedBox(height: 5),
+                              if (widget.status == 'Rejected')
+                                Align(
+                                  alignment: Alignment.bottomLeft,
+                                  child: textLabel(
+                                    text: '',
+                                    color: whiteColor,
+                                    size: 14,
+                                  ),
+                                ),
+                              // if (widget.status == 'Ongoing' ||
+                              //     widget.status == 'Resolved')
+                              //   const SizedBox(height: 20),
+                              // if (widget.status == 'Ongoing' ||
+                              //     widget.status == 'Resolved')
+                              //   Row(
+                              //     children: [
+                              //       SvgPicture.asset(
+                              //         'assets/icons/ic_time.svg',
+                              //         height: 10,
+                              //         width: 10,
+                              //         fit: BoxFit.scaleDown,
+                              //         colorFilter: const ColorFilter.mode(
+                              //           whiteColor,
+                              //           BlendMode.srcIn,
+                              //         ),
+                              //       ),
+                              //       const SizedBox(width: 5),
+                              //       textLabel(
+                              //         text: 'Time Responded',
+                              //         color: whiteColor,
+                              //         weight: FontWeight.bold,
+                              //       ),
+                              //     ],
+                              //   ),
+                              // if (widget.status == 'Ongoing' ||
+                              //     widget.status == 'Resolved')
+                              //   const SizedBox(height: 5),
+                              // if (widget.status == 'Ongoing' ||
+                              //     widget.status == 'Resolved')
+                              //   Align(
+                              //     alignment: Alignment.bottomLeft,
+                              //     child: textLabel(
+                              //       text: '',
+                              //       color: whiteColor,
+                              //       size: 14,
+                              //     ),
+                              //   ),
+                              if (widget.status == 'Resolved')
+                                const SizedBox(height: 10),
+                              if (widget.status == 'Resolved')
+                                Row(
+                                  children: [
+                                    SvgPicture.asset(
+                                      'assets/icons/ic_time.svg',
+                                      height: 10,
+                                      width: 10,
+                                      fit: BoxFit.scaleDown,
+                                      colorFilter: const ColorFilter.mode(
+                                        whiteColor,
+                                        BlendMode.srcIn,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 5),
+                                    textLabel(
+                                      text: 'Time Resolved',
+                                      color: whiteColor,
+                                      weight: FontWeight.bold,
+                                    ),
+                                  ],
+                                ),
+                              if (widget.status == 'Resolved')
+                                const SizedBox(height: 5),
+                              if (widget.status == 'Resolved')
+                                Align(
+                                  alignment: Alignment.bottomLeft,
+                                  child: textLabel(
+                                    text: '',
+                                    color: whiteColor,
+                                    size: 14,
+                                  ),
+                                ),
                               const SizedBox(height: 10),
-                            if (widget.status == 'Resolved')
-                              Row(
-                                children: [
-                                  SvgPicture.asset(
-                                    'assets/icons/ic_time.svg',
-                                    height: 10,
-                                    width: 10,
-                                    fit: BoxFit.scaleDown,
-                                    colorFilter: const ColorFilter.mode(
-                                      whiteColor,
-                                      BlendMode.srcIn,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 5),
-                                  textLabel(
-                                    text: 'Time Resolved',
-                                    color: whiteColor,
-                                    weight: FontWeight.bold,
-                                  ),
-                                ],
-                              ),
-                            if (widget.status == 'Resolved')
-                              const SizedBox(height: 5),
-                            if (widget.status == 'Resolved')
-                              Align(
-                                alignment: Alignment.bottomLeft,
-                                child: textLabel(
-                                  text: '',
-                                  color: whiteColor,
-                                  size: 14,
-                                ),
-                              ),
-                            const SizedBox(height: 10),
-                          ],
-                        ),
-                      ],
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
                   ),
-                ),
                 const SizedBox(height: 20),
                 textLabel(
                   text: widget.category,
@@ -412,8 +429,11 @@ class _ReportDetailsScreenState extends State<ReportDetailsScreen> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => const LoaderOverlay(
-                              child: MapScreen(),
+                            builder: (context) => LoaderOverlay(
+                              child: MapScreen(
+                                lat: widget.lat,
+                                long: widget.long,
+                              ),
                             ),
                           ),
                         );
@@ -446,7 +466,7 @@ class _ReportDetailsScreenState extends State<ReportDetailsScreen> {
                 ),
                 const SizedBox(height: 5),
                 textLabel(
-                  text: widget.time,
+                  text: timeFormat(widget.time),
                   color: blackColor,
                   size: 14,
                 ),
@@ -486,9 +506,19 @@ class _ReportDetailsScreenState extends State<ReportDetailsScreen> {
                           ),
                           child: ClipRRect(
                             borderRadius: BorderRadius.circular(10),
-                            child: Image.network(
-                              widget.attach[index]['url'],
-                              fit: BoxFit.cover,
+                            child: GestureDetector(
+                              onTap: () {
+                                showImageViewer(
+                                    context,
+                                    Image.network(
+                                      widget.attach[index]['url'],
+                                    ).image,
+                                    swipeDismissible: false);
+                              },
+                              child: Image.network(
+                                widget.attach[index]['url'],
+                                fit: BoxFit.cover,
+                              ),
                             ),
                           ),
                         ),
@@ -509,15 +539,18 @@ class _ReportDetailsScreenState extends State<ReportDetailsScreen> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => const LoaderOverlay(
-                              child: ProgressScreen(),
+                            builder: (context) => LoaderOverlay(
+                              child: ProgressScreen(
+                                reportId: widget.id,
+                                contractorId: widget.contractorId,
+                              ),
                             ),
                           ),
                         );
                       }
                       if (widget.status == 'Pending') {
                         context.loaderOverlay.show;
-                        var res = await updateReports(
+                        var res = await updateStatusReport(
                           context,
                           widget.id,
                           'Ongoing',
@@ -549,7 +582,7 @@ class _ReportDetailsScreenState extends State<ReportDetailsScreen> {
                         : lightGreenColor,
                     onPressed: () async {
                       context.loaderOverlay.show;
-                      var res = await updateReports(
+                      var res = await updateStatusReport(
                         context,
                         widget.id,
                         widget.status == 'Pending' ? 'Rejected' : 'Resolved',
@@ -566,9 +599,8 @@ class _ReportDetailsScreenState extends State<ReportDetailsScreen> {
                       }
                     },
                   ),
-                const SizedBox(height: 30),
-                if (widget.status == 'Pending' || widget.status == 'Ongoing')
-                  const SizedBox(height: 50),
+                const SizedBox(height: 50),
+                if (widget.status == 'Ongoing') const SizedBox(height: 50),
               ],
             ),
           ),

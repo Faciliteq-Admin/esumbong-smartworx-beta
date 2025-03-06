@@ -1,12 +1,17 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:loader_overlay/loader_overlay.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:smartworx/api.dart';
 import 'package:smartworx/colors.dart';
 import 'package:smartworx/constant.dart';
 import 'package:smartworx/screens/rejected_screen.dart';
 import 'package:smartworx/screens/resolved_screen.dart';
+import 'package:smartworx/screens/sign_in_screen.dart';
+import 'package:toastification/toastification.dart';
 
 class AccountScreen extends StatefulWidget {
   const AccountScreen({super.key});
@@ -16,6 +21,31 @@ class AccountScreen extends StatefulWidget {
 }
 
 class _AccountScreenState extends State<AccountScreen> {
+  Map contractor = {};
+
+  getAssignContractor() async {
+    var res = await getContractor(context);
+    if (res.success) {
+      if (mounted) {
+        setState(() {
+          contractor = res.data['data'];
+        });
+      }
+    } else {
+      toast(
+        context,
+        ToastificationType.error,
+        res.message.toString(),
+      );
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    getAssignContractor();
+  }
+
   @override
   Widget build(BuildContext context) {
     return AnnotatedRegion<SystemUiOverlayStyle>(
@@ -59,25 +89,36 @@ class _AccountScreenState extends State<AccountScreen> {
               mainAxisAlignment: MainAxisAlignment.start,
               children: [
                 Center(
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(50),
-                    child: Image.asset(
-                      'assets/images/im_smartworx_pobla.png',
-                      height: 100,
-                      width: 100,
-                      fit: BoxFit.cover,
+                  child: Container(
+                    height: 100,
+                    width: 100,
+                    decoration: BoxDecoration(
+                      color: purpleColor,
+                      borderRadius: BorderRadius.circular(50),
+                    ),
+                    child: Center(
+                      child: textLabel(
+                        text:
+                            '${userData['firstName'].toString()[0]}${userData['lastName'].toString()[0]}',
+                        color: whiteColor,
+                        size: 40,
+                        weight: FontWeight.bold,
+                      ),
                     ),
                   ),
                 ),
                 const SizedBox(height: 10),
                 textLabel(
-                  text: 'Dante Fernando',
+                  text: userData['middleName'] == null ||
+                          userData['middleName'].toString().isEmpty
+                      ? '${userData['firstName']} ${userData['lastName']}'
+                      : '${userData['firstName']} ${userData['middleName']} ${userData['lastName']}',
                   color: blackColor,
                   size: 16,
                   weight: FontWeight.bold,
                 ),
                 textLabel(
-                  text: 'Barangay Poblacion II, Tagbilaran',
+                  text: userData['organizationName'],
                   color: blackColor,
                   size: 14,
                   weight: FontWeight.bold,
@@ -94,7 +135,7 @@ class _AccountScreenState extends State<AccountScreen> {
                     ),
                     const SizedBox(width: 5),
                     textLabel(
-                      text: 'tagbilaran_poblacionII@gmail.com',
+                      text: contractor['organizationEmail'] ?? '',
                       color: blackColor,
                     ),
                   ],
@@ -110,7 +151,8 @@ class _AccountScreenState extends State<AccountScreen> {
                     ),
                     const SizedBox(width: 5),
                     textLabel(
-                      text: '+639112233445',
+                      text:
+                          '+63${contractor['organizationContactNumber'].toString().substring(1)}',
                       color: blackColor,
                     ),
                   ],
@@ -192,7 +234,16 @@ class _AccountScreenState extends State<AccountScreen> {
                 const SizedBox(height: 50),
                 primaryButton(
                   text: 'Sign Out',
-                  onPressed: () async {},
+                  onPressed: () async {
+                    appBox.delete(LOGGED_USER);
+                    Navigator.pushAndRemoveUntil(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const SignInScreen(),
+                      ),
+                      (route) => false,
+                    );
+                  },
                   buttonColor: lightRedColor,
                 ),
                 const SizedBox(height: 30),

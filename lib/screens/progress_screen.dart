@@ -1,14 +1,26 @@
+// ignore_for_file: use_build_context_synchronously, must_be_immutable
+
 import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:loader_overlay/loader_overlay.dart';
+import 'package:mime/mime.dart';
+import 'package:smartworx/api.dart';
 import 'package:smartworx/colors.dart';
 import 'package:smartworx/constant.dart';
+import 'package:toastification/toastification.dart';
 
 class ProgressScreen extends StatefulWidget {
-  const ProgressScreen({super.key});
+  String reportId;
+  String contractorId;
+  ProgressScreen({
+    required this.reportId,
+    required this.contractorId,
+    super.key,
+  });
 
   @override
   State<ProgressScreen> createState() => _ProgressScreenState();
@@ -20,16 +32,35 @@ class _ProgressScreenState extends State<ProgressScreen> {
 
   List images = [];
   List imagesBase64 = [];
+  List attach = [];
   final _picker = ImagePicker();
+  String urlImg = '';
 
   Future<void> _openImagePicker() async {
     final XFile? pickedImage = await _picker.pickImage(
       source: ImageSource.camera,
       imageQuality: 25,
     );
+
     if (pickedImage != null) {
+      var size = File(pickedImage.path).lengthSync();
+      var mimeType = lookupMimeType(pickedImage.path);
+      String im = pickedImage.path.split('/').last;
+      var res = await uploadFile(context, File(pickedImage.path), mimeType);
+      if (res.success) {
+        setState(() {
+          urlImg = res.data['fileUrl'];
+        });
+      }
+      var a = {
+        'url': urlImg,
+        'type': mimeType,
+        'name': im,
+        'size': size,
+      };
       setState(
         () {
+          attach.add(a);
           final bytes = File(pickedImage.path).readAsBytesSync();
           String base64Image = 'data:image/png;base64,${base64Encode(bytes)}';
           images.add(File(pickedImage.path));
@@ -168,7 +199,25 @@ class _ProgressScreenState extends State<ProgressScreen> {
                 text: 'Update',
                 buttonColor: lightBlueColor,
                 onPressed: () async {
-                  Navigator.pop(context);
+                  context.loaderOverlay.show();
+                  var res = await updateProgressReport(
+                    context,
+                    widget.reportId,
+                    widget.contractorId,
+                    _details.text.trim(),
+                    'Ongoing',
+                    attach,
+                  );
+                  context.loaderOverlay.hide();
+                  if (res.success) {
+                    Navigator.pop(context);
+                  } else {
+                    toast(
+                      context,
+                      ToastificationType.error,
+                      res.message.toString(),
+                    );
+                  }
                 },
               ),
               const SizedBox(height: 30),

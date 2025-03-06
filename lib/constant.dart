@@ -1,5 +1,6 @@
 // ignore_for_file: constant_identifier_names
 
+import 'package:intl/intl.dart';
 import 'package:smartworx/colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
@@ -42,6 +43,13 @@ datePicker(
     lastDate: DateTime.now(),
   );
   return pickedDate;
+}
+
+String timeFormat(String date) {
+  DateTime now = DateTime.parse(date);
+  var formatter = DateFormat('MMMM dd, yyyy hh:mm aa');
+  var formatted = formatter.format(now);
+  return formatted;
 }
 
 Widget primaryButton({

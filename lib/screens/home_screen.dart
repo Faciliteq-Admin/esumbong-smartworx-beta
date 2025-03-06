@@ -161,13 +161,21 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: [
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(25),
-                        child: Image.asset(
-                          'assets/images/im_smartworx_pobla.png',
-                          height: 50,
-                          width: 50,
-                          fit: BoxFit.cover,
+                      Container(
+                        height: 50,
+                        width: 50,
+                        decoration: BoxDecoration(
+                          color: purpleColor,
+                          borderRadius: BorderRadius.circular(25),
+                        ),
+                        child: Center(
+                          child: textLabel(
+                            text:
+                                '${userData['firstName'].toString()[0]}${userData['lastName'].toString()[0]}',
+                            color: whiteColor,
+                            size: 18,
+                            weight: FontWeight.bold,
+                          ),
                         ),
                       ),
                       const SizedBox(width: 15),
@@ -198,7 +206,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             ],
                           ),
                           textLabel(
-                              text: '$strBarangay $strCity $strProvince',
+                              text: userData['organizationName'],
                               color: blackColor,
                               size: 14,
                               weight: FontWeight.bold),
@@ -256,15 +264,25 @@ class _HomeScreenState extends State<HomeScreen> {
                                     MaterialPageRoute(
                                       builder: (context) => LoaderOverlay(
                                         child: ReportDetailsScreen(
-                                          reporterName: reportsPending[index]
-                                              ['fullName'],
-                                          reporterAddress: reportsPending[index]
-                                              ['street'],
-                                          reporterEmail: '',
-                                          reporterPhone: '',
-                                          reporterLat: 0,
-                                          reporterLong: 0,
+                                          lat: reportsPending[index]
+                                                      ['latitude'] !=
+                                                  null
+                                              ? double.parse(
+                                                  reportsPending[index]
+                                                      ['latitude'])
+                                              : 0,
+                                          long: reportsPending[index]
+                                                      ['latitude'] !=
+                                                  null
+                                              ? double.parse(
+                                                  reportsPending[index]
+                                                      ['longitude'])
+                                              : 0,
                                           id: reportsPending[index]['id'],
+                                          reporterId: reportsPending[index]
+                                              ['reportedBy'],
+                                          contractorId: reportsPending[index]
+                                              ['assignedResolver'],
                                           category: reportsPending[index]
                                               ['category'],
                                           subcategory: reportsPending[index]
@@ -410,15 +428,25 @@ class _HomeScreenState extends State<HomeScreen> {
                                     MaterialPageRoute(
                                       builder: (context) => LoaderOverlay(
                                         child: ReportDetailsScreen(
-                                          reporterName: reportsOngoing[index]
-                                              ['fullName'],
-                                          reporterAddress: reportsOngoing[index]
-                                              ['street'],
-                                          reporterEmail: '',
-                                          reporterPhone: '',
-                                          reporterLat: 0,
-                                          reporterLong: 0,
+                                          lat: reportsOngoing[index]
+                                                      ['latitude'] !=
+                                                  null
+                                              ? double.parse(
+                                                  reportsOngoing[index]
+                                                      ['latitude'])
+                                              : 0,
+                                          long: reportsOngoing[index]
+                                                      ['latitude'] !=
+                                                  null
+                                              ? double.parse(
+                                                  reportsOngoing[index]
+                                                      ['longitude'])
+                                              : 0,
                                           id: reportsOngoing[index]['id'],
+                                          reporterId: reportsOngoing[index]
+                                              ['reportedBy'],
+                                          contractorId: reportsOngoing[index]
+                                              ['assignedResolver'],
                                           category: reportsOngoing[index]
                                               ['category'],
                                           subcategory: reportsOngoing[index]

@@ -43,7 +43,11 @@ dependencies:
   hive_flutter: ^1.1.0
   flutter_riverpod: ^2.6.1
   package_info_plus: ^8.1.2
-
+  mime: ^2.0.0
+  easy_image_viewer: ^1.5.1
+  google_maps_flutter: ^2.10.1
+  geocoding: ^3.0.0
+  
 dev_dependencies:
   flutter_test:
     sdk: flutter

@@ -1,5 +1,7 @@
 // ignore_for_file: use_build_context_synchronously
 
+import 'dart:io';
+
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:smartworx/constant.dart';
@@ -121,7 +123,7 @@ Future<ApiResponse> getReports(
   }
 }
 
-Future<ApiResponse> updateReports(
+Future<ApiResponse> updateStatusReport(
   BuildContext context,
   String id,
   String status,
@@ -219,6 +221,154 @@ Future<ApiResponse> getBarangayById(
 ) async {
   try {
     var path = "/v1/locations/barangays/$id";
+    Response response = await dio.get(
+      path,
+    );
+    if (response.data != null) {
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return ApiResponse(success: true, data: response.data);
+      }
+      return ApiResponse(success: false, message: response.data["message"]);
+    } else {
+      return const ApiResponse(success: false);
+    }
+  } on DioException catch (e) {
+    toast(
+      context,
+      ToastificationType.warning,
+      'You are offline',
+    );
+    return ApiResponse(success: false, message: e.message);
+  } catch (e) {
+    return ApiResponse(success: false, message: '$e');
+  }
+}
+
+Future<ApiResponse> updateProgressReport(
+  BuildContext context,
+  String reportId,
+  String contractorId,
+  String details,
+  String status,
+  List attachments,
+) async {
+  try {
+    var path = "/v1/reports/updates";
+    Map<String, dynamic> payload = {
+      'reportId': reportId,
+      'contractorId': contractorId,
+      'details': details,
+      'status': status,
+      'attachments': attachments,
+    };
+    Response response = await dio.post(
+      path,
+      data: payload,
+    );
+    if (response.data != null) {
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return ApiResponse(success: true, data: response.data);
+      }
+      return ApiResponse(success: false, message: response.data["message"]);
+    } else {
+      return const ApiResponse(success: false);
+    }
+  } on DioException catch (e) {
+    toast(
+      context,
+      ToastificationType.warning,
+      'You are offline',
+    );
+    return ApiResponse(success: false, message: e.message);
+  } catch (e) {
+    return ApiResponse(success: false, message: '$e');
+  }
+}
+
+Future<ApiResponse> uploadFile(
+  BuildContext context,
+  File? image,
+  String? type,
+) async {
+  String im = image == null ? '' : image.path.split('/').last;
+  var mime = type!.split('/');
+  FormData formData = FormData.fromMap({
+    'file': image == null
+        ? ''
+        : await MultipartFile.fromFile(
+            image.path,
+            filename: im,
+            contentType: DioMediaType(
+              mime[0].trim(),
+              mime[1].trim(),
+            ),
+          ),
+  });
+  try {
+    var path = "/v1/uploader/single";
+    Response response = await dio.post(
+      path,
+      data: formData,
+      options: Options(
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      ),
+    );
+    if (response.data != null) {
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return ApiResponse(success: true, data: response.data);
+      }
+      return ApiResponse(success: false, message: response.data["message"]);
+    } else {
+      return const ApiResponse(success: false);
+    }
+  } on DioException catch (e) {
+    toast(
+      context,
+      ToastificationType.warning,
+      'You are offline',
+    );
+    return ApiResponse(success: false, message: e.message);
+  } catch (e) {
+    return ApiResponse(success: false, message: '$e');
+  }
+}
+
+Future<ApiResponse> getCitizen(
+  BuildContext context,
+  String id,
+) async {
+  try {
+    var path = "/v1/citizens?userId=$id";
+    Response response = await dio.get(
+      path,
+    );
+    if (response.data != null) {
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return ApiResponse(success: true, data: response.data);
+      }
+      return ApiResponse(success: false, message: response.data["message"]);
+    } else {
+      return const ApiResponse(success: false);
+    }
+  } on DioException catch (e) {
+    toast(
+      context,
+      ToastificationType.warning,
+      'You are offline',
+    );
+    return ApiResponse(success: false, message: e.message);
+  } catch (e) {
+    return ApiResponse(success: false, message: '$e');
+  }
+}
+
+Future<ApiResponse> getContractor(
+  BuildContext context,
+) async {
+  try {
+    var path = "/v1/contractors/${userData['contractorId']}";
     Response response = await dio.get(
       path,
     );
