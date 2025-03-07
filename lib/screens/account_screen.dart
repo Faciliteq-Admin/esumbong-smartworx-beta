@@ -93,7 +93,7 @@ class _AccountScreenState extends State<AccountScreen> {
                     height: 100,
                     width: 100,
                     decoration: BoxDecoration(
-                      color: purpleColor,
+                      color: darkRedColor,
                       borderRadius: BorderRadius.circular(50),
                     ),
                     child: Center(

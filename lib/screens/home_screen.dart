@@ -21,6 +21,7 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   List reportsPending = [];
   List reportsOngoing = [];
+  List reportsForVerification = [];
 
   provinceById() async {
     var res = await getProvinceById(context, int.parse(userData['provId']));
@@ -82,6 +83,10 @@ class _HomeScreenState extends State<HomeScreen> {
                 setState(() {
                   reportsOngoing.add(oneReportPending);
                 });
+              } else if (oneReportPending['status'] == 'For Verification') {
+                setState(() {
+                  reportsForVerification.add(oneReportPending);
+                });
               }
             }
           },
@@ -99,12 +104,21 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _pullRefreshPending() async {
     reportsPending = [];
     reportsOngoing = [];
+    reportsForVerification = [];
     getAllReports();
   }
 
   Future<void> _pullRefreshOngoing() async {
     reportsPending = [];
     reportsOngoing = [];
+    reportsForVerification = [];
+    getAllReports();
+  }
+
+  Future<void> _pullRefreshForVerification() async {
+    reportsPending = [];
+    reportsOngoing = [];
+    reportsForVerification = [];
     getAllReports();
   }
 
@@ -122,7 +136,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return PopScope(
       canPop: false,
       child: DefaultTabController(
-        length: 2,
+        length: 3,
         child: AnnotatedRegion<SystemUiOverlayStyle>(
           value: SystemUiOverlayStyle.dark,
           child: Scaffold(
@@ -165,7 +179,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         height: 50,
                         width: 50,
                         decoration: BoxDecoration(
-                          color: purpleColor,
+                          color: darkRedColor,
                           borderRadius: BorderRadius.circular(25),
                         ),
                         child: Center(
@@ -226,7 +240,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   child: TabBar(
                     labelStyle: TextStyle(
-                      fontSize: 16,
+                      fontSize: 12,
                       fontWeight: FontWeight.bold,
                     ),
                     labelColor: blackColor,
@@ -235,6 +249,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     tabs: [
                       Tab(text: 'Pending'),
                       Tab(text: 'Ongoing'),
+                      Tab(text: 'For Verification'),
                     ],
                   ),
                 ),
@@ -368,9 +383,10 @@ class _HomeScreenState extends State<HomeScreen> {
                                             ),
                                             const SizedBox(width: 5),
                                             textLabel(
-                                              text: reportsPending[index]
-                                                      ['createdAt']
-                                                  .toString(),
+                                              text: timeFormat(
+                                                  reportsPending[index]
+                                                          ['createdAt']
+                                                      .toString()),
                                               color: blackColor,
                                             ),
                                           ],
@@ -380,7 +396,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                           decoration: BoxDecoration(
                                             color: lightOrangeColor,
                                             borderRadius:
-                                                BorderRadius.circular(17),
+                                                BorderRadius.circular(20),
                                           ),
                                           child: Padding(
                                             padding: const EdgeInsets.only(
@@ -533,9 +549,10 @@ class _HomeScreenState extends State<HomeScreen> {
                                             ),
                                             const SizedBox(width: 5),
                                             textLabel(
-                                              text: reportsOngoing[index]
-                                                      ['createdAt']
-                                                  .toString(),
+                                              text: timeFormat(
+                                                  reportsOngoing[index]
+                                                          ['createdAt']
+                                                      .toString()),
                                               color: blackColor,
                                             ),
                                           ],
@@ -545,7 +562,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                           decoration: BoxDecoration(
                                             color: lightYellowColor,
                                             borderRadius:
-                                                BorderRadius.circular(17),
+                                                BorderRadius.circular(20),
                                           ),
                                           child: Padding(
                                             padding: const EdgeInsets.only(
@@ -556,6 +573,178 @@ class _HomeScreenState extends State<HomeScreen> {
                                             ),
                                             child: textLabel(
                                               text: 'Ongoing',
+                                              color: whiteColor,
+                                              weight: FontWeight.bold,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                      RefreshIndicator(
+                        onRefresh: _pullRefreshForVerification,
+                        child: ListView.builder(
+                          padding: const EdgeInsets.only(
+                            top: 30,
+                            bottom: 70,
+                          ),
+                          physics: const AlwaysScrollableScrollPhysics(),
+                          itemCount: reportsForVerification.length,
+                          itemBuilder: (context, index) {
+                            return Padding(
+                              padding: const EdgeInsets.only(
+                                left: 20,
+                                right: 20,
+                                bottom: 10,
+                              ),
+                              child: GestureDetector(
+                                onTap: () async {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => LoaderOverlay(
+                                        child: ReportDetailsScreen(
+                                          lat: reportsForVerification[index]
+                                                      ['latitude'] !=
+                                                  null
+                                              ? double.parse(
+                                                  reportsForVerification[index]
+                                                      ['latitude'])
+                                              : 0,
+                                          long: reportsForVerification[index]
+                                                      ['latitude'] !=
+                                                  null
+                                              ? double.parse(
+                                                  reportsForVerification[index]
+                                                      ['longitude'])
+                                              : 0,
+                                          id: reportsForVerification[index]
+                                              ['id'],
+                                          reporterId:
+                                              reportsForVerification[index]
+                                                  ['reportedBy'],
+                                          contractorId:
+                                              reportsForVerification[index]
+                                                  ['assignedResolver'],
+                                          category:
+                                              reportsForVerification[index]
+                                                  ['category'],
+                                          subcategory:
+                                              reportsForVerification[index]
+                                                  ['subcategory'],
+                                          status: 'For Verification',
+                                          details: reportsForVerification[index]
+                                              ['description'],
+                                          location:
+                                              reportsForVerification[index]
+                                                  ['street'],
+                                          time: reportsForVerification[index]
+                                              ['createdAt'],
+                                          attach: reportsForVerification[index]
+                                              ['attachments'],
+                                        ),
+                                      ),
+                                    ),
+                                  );
+                                },
+                                child: Container(
+                                  width: MediaQuery.of(context).size.width,
+                                  decoration: BoxDecoration(
+                                    color: whiteColor,
+                                    borderRadius: BorderRadius.circular(10),
+                                    border: Border.all(
+                                      color: lightGrayColor,
+                                    ),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: darkGrayColor.withValues(
+                                            alpha: 0.2),
+                                        blurRadius: 3,
+                                        offset: const Offset(3, 3),
+                                      ),
+                                    ],
+                                  ),
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(15),
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        textLabel(
+                                          text: reportsForVerification[index]
+                                                  ['category']
+                                              .toString(),
+                                          color: blackColor,
+                                          size: 16,
+                                          weight: FontWeight.bold,
+                                        ),
+                                        textLabel(
+                                          text: reportsForVerification[index]
+                                                  ['subcategory']
+                                              .toString(),
+                                          color: blackColor,
+                                          size: 14,
+                                          weight: FontWeight.bold,
+                                        ),
+                                        const SizedBox(height: 5),
+                                        Row(
+                                          children: [
+                                            SvgPicture.asset(
+                                              'assets/icons/ic_address.svg',
+                                              height: 10,
+                                              width: 10,
+                                              fit: BoxFit.scaleDown,
+                                            ),
+                                            const SizedBox(width: 5),
+                                            textLabel(
+                                              text:
+                                                  reportsForVerification[index]
+                                                          ['street']
+                                                      .toString(),
+                                              color: blackColor,
+                                            ),
+                                          ],
+                                        ),
+                                        Row(
+                                          children: [
+                                            SvgPicture.asset(
+                                              'assets/icons/ic_time.svg',
+                                              height: 10,
+                                              width: 10,
+                                              fit: BoxFit.scaleDown,
+                                            ),
+                                            const SizedBox(width: 5),
+                                            textLabel(
+                                              text: timeFormat(
+                                                  reportsForVerification[index]
+                                                          ['createdAt']
+                                                      .toString()),
+                                              color: blackColor,
+                                            ),
+                                          ],
+                                        ),
+                                        const SizedBox(height: 10),
+                                        Container(
+                                          decoration: BoxDecoration(
+                                            color: purpleColor,
+                                            borderRadius:
+                                                BorderRadius.circular(20),
+                                          ),
+                                          child: Padding(
+                                            padding: const EdgeInsets.only(
+                                              left: 10,
+                                              right: 10,
+                                              top: 5,
+                                              bottom: 5,
+                                            ),
+                                            child: textLabel(
+                                              text: 'For Verification',
                                               color: whiteColor,
                                               weight: FontWeight.bold,
                                             ),

@@ -49,7 +49,7 @@ datePicker(
 String timeFormat(String date) {
   DateTime now = DateTime.parse(date);
   var formatter = DateFormat('MMMM dd, yyyy hh:mm aa');
-  var formatted = formatter.format(now);
+  var formatted = formatter.format(now.add(Duration(hours: 8)));
   return formatted;
 }
 

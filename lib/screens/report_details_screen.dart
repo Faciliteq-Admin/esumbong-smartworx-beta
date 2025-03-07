@@ -10,6 +10,8 @@ import 'package:smartworx/colors.dart';
 import 'package:smartworx/constant.dart';
 import 'package:smartworx/screens/map_screen.dart';
 import 'package:smartworx/screens/progress_screen.dart';
+import 'package:smartworx/screens/report_for_verification_screen.dart';
+import 'package:smartworx/screens/updates_screen.dart';
 import 'package:toastification/toastification.dart';
 
 class ReportDetailsScreen extends StatefulWidget {
@@ -91,6 +93,37 @@ class _ReportDetailsScreenState extends State<ReportDetailsScreen> {
             color: whiteColor,
             size: 18,
           ),
+          actions: [
+            Visibility(
+              visible: widget.status == 'Ongoing' ||
+                      widget.status == 'For Verification'
+                  ? true
+                  : false,
+              child: IconButton(
+                icon: SvgPicture.asset(
+                  'assets/icons/ic_history_update.svg',
+                  height: 20,
+                  width: 20,
+                  colorFilter: const ColorFilter.mode(
+                    whiteColor,
+                    BlendMode.srcIn,
+                  ),
+                ),
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => LoaderOverlay(
+                        child: UpdatesScreen(
+                          id: widget.id,
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
         ),
         floatingActionButton: Visibility(
           visible: widget.status == 'Ongoing' ? true : false,
@@ -150,7 +183,7 @@ class _ReportDetailsScreenState extends State<ReportDetailsScreen> {
                               ),
                               const SizedBox(width: 5),
                               textLabel(
-                                text: 'Reported By',
+                                text: 'Citizen',
                                 color: whiteColor,
                                 weight: FontWeight.bold,
                               ),
@@ -363,10 +396,12 @@ class _ReportDetailsScreenState extends State<ReportDetailsScreen> {
                         ? lightOrangeColor
                         : widget.status == 'Ongoing'
                             ? lightYellowColor
-                            : widget.status == 'Resolved'
-                                ? lightGreenColor
-                                : lightRedColor,
-                    borderRadius: BorderRadius.circular(17),
+                            : widget.status == 'For Verification'
+                                ? purpleColor
+                                : widget.status == 'Resolved'
+                                    ? lightGreenColor
+                                    : lightRedColor,
+                    borderRadius: BorderRadius.circular(20),
                   ),
                   child: Padding(
                     padding: const EdgeInsets.only(
@@ -532,7 +567,7 @@ class _ReportDetailsScreenState extends State<ReportDetailsScreen> {
                   primaryButton(
                     text: widget.status == 'Pending'
                         ? 'Accept Report'
-                        : 'Send a Progress Update',
+                        : 'Progress Update',
                     buttonColor: lightBlueColor,
                     onPressed: () async {
                       if (widget.status == 'Ongoing') {
@@ -576,20 +611,38 @@ class _ReportDetailsScreenState extends State<ReportDetailsScreen> {
                   primaryButton(
                     text: widget.status == 'Pending'
                         ? 'Reject Report'
-                        : 'Resolved',
+                        : 'For Verification',
                     buttonColor: widget.status == 'Pending'
                         ? lightRedColor
-                        : lightGreenColor,
+                        : purpleColor,
                     onPressed: () async {
                       context.loaderOverlay.show;
                       var res = await updateStatusReport(
                         context,
                         widget.id,
-                        widget.status == 'Pending' ? 'Rejected' : 'Resolved',
+                        widget.status == 'Pending'
+                            ? 'Rejected'
+                            : 'For Verification',
                       );
                       context.loaderOverlay.hide;
                       if (res.success) {
-                        Navigator.pop(context);
+                        if (widget.status == 'Pending') {
+                          toast(
+                            context,
+                            ToastificationType.success,
+                            'Report was successfully rejected',
+                          );
+                          Navigator.pop(context);
+                        } else {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const LoaderOverlay(
+                                child: ReportForVerificationScreen(),
+                              ),
+                            ),
+                          );
+                        }
                       } else {
                         toast(
                           context,
@@ -599,7 +652,7 @@ class _ReportDetailsScreenState extends State<ReportDetailsScreen> {
                       }
                     },
                   ),
-                const SizedBox(height: 50),
+                const SizedBox(height: 30),
                 if (widget.status == 'Ongoing') const SizedBox(height: 50),
               ],
             ),

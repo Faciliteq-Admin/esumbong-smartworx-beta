@@ -157,7 +157,7 @@ class _RejectedScreenState extends State<RejectedScreen> {
                         Container(
                           decoration: BoxDecoration(
                             color: lightRedColor,
-                            borderRadius: BorderRadius.circular(17),
+                            borderRadius: BorderRadius.circular(20),
                           ),
                           child: Padding(
                             padding: const EdgeInsets.only(

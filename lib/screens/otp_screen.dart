@@ -1,10 +1,11 @@
-// ignore_for_file: must_be_immutable
+// ignore_for_file: must_be_immutable, use_build_context_synchronously
 
 import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_otp_text_field/flutter_otp_text_field.dart';
 import 'package:loader_overlay/loader_overlay.dart';
+import 'package:smartworx/api.dart';
 import 'package:smartworx/colors.dart';
 import 'package:smartworx/constant.dart';
 import 'package:smartworx/screens/set_password_screen.dart';
@@ -88,7 +89,7 @@ class _OtpScreenState extends State<OtpScreen> {
                       ),
                       cursorColor: blackColor,
                       numberOfFields: 6,
-                      focusedBorderColor: purpleColor,
+                      focusedBorderColor: darkRedColor,
                       enabledBorderColor: grayColor,
                       showFieldAsBox: false,
                       borderWidth: 3.0,
@@ -125,12 +126,25 @@ class _OtpScreenState extends State<OtpScreen> {
                               textLabel: 'Don\u0027t receive the OTP?',
                               buttonLabel: 'Resend OTP',
                               onPressed: () async {
-                                setState(
-                                  () {
+                                context.loaderOverlay.show();
+                                var res = await sendOTP(
+                                  context,
+                                  widget.userData['mobile'],
+                                  widget.userData['email'],
+                                );
+                                context.loaderOverlay.hide();
+                                if (res.success) {
+                                  setState(() {
                                     _start = 300;
                                     startTimer();
-                                  },
-                                );
+                                  });
+                                } else {
+                                  toast(
+                                    context,
+                                    ToastificationType.error,
+                                    res.message.toString(),
+                                  );
+                                }
                               },
                             ),
                         ],

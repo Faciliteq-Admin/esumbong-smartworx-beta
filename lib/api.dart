@@ -465,3 +465,32 @@ Future<ApiResponse> getContractor(
     return ApiResponse(success: false, message: '$e');
   }
 }
+
+Future<ApiResponse> getReportUpdates(
+  BuildContext context,
+  String id,
+) async {
+  try {
+    var path = "/v1/reports/updates/?reportId=$id";
+    Response response = await dio.get(
+      path,
+    );
+    if (response.data != null) {
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return ApiResponse(success: true, data: response.data);
+      }
+      return ApiResponse(success: false, message: response.data["message"]);
+    } else {
+      return const ApiResponse(success: false);
+    }
+  } on DioException catch (e) {
+    toast(
+      context,
+      ToastificationType.warning,
+      'You are offline',
+    );
+    return ApiResponse(success: false, message: e.message);
+  } catch (e) {
+    return ApiResponse(success: false, message: '$e');
+  }
+}

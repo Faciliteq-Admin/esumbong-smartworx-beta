@@ -176,7 +176,7 @@ class _ResolvedScreenState extends State<ResolvedScreen> {
                         Container(
                           decoration: BoxDecoration(
                             color: lightGreenColor,
-                            borderRadius: BorderRadius.circular(17),
+                            borderRadius: BorderRadius.circular(20),
                           ),
                           child: Padding(
                             padding: const EdgeInsets.only(

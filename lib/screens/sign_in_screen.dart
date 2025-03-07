@@ -125,6 +125,7 @@ class _SignInScreenState extends State<SignInScreen> {
                                     res.data['user']['mobile'],
                                     res.data['user']['email'],
                                   );
+                                  context.loaderOverlay.hide();
                                   if (res1.success) {
                                     Navigator.push(
                                       context,
